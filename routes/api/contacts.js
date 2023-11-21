@@ -13,6 +13,7 @@ const schema = Joi.object({
   email: Joi.string().email().required(),
 });
 
+
 router.get('/', async (req, res, next) => {
   const data = await models.listContacts()
   
