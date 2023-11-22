@@ -106,3 +106,4 @@ module.exports = {
 }
 
 //mongodb+srv://mariana:danna@cluster0.dtlx8ln.mongodb.net/
+//mongodb+srv://mariana:danna@cluster0.dtlx8ln.mongodb.net/db_contacts?retryWrites=true&w=majority
