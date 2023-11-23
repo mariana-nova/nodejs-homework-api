@@ -21,6 +21,7 @@ router.get('/', async (req, res, next) => {
 })
 
 
+
 router.get('/:contactId', async (req, res, next) => {
   const id = req.params.contactId;
   const data = await models.getContactById(id)
