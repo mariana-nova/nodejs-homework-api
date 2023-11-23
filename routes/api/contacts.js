@@ -14,6 +14,7 @@ const schema = Joi.object({
 });
 
 
+
 router.get('/', async (req, res, next) => {
   const data = await models.listContacts()
   
