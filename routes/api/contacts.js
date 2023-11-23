@@ -5,6 +5,7 @@ const router = express.Router()
 const Joi = require("joi");
 
 
+
 const schema = Joi.object({
   name: Joi.string().required(),
 
@@ -12,6 +13,7 @@ const schema = Joi.object({
 
   email: Joi.string().email().required(),
 });
+
 
 
 router.get('/', async (req, res, next) => {
