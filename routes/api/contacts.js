@@ -1,71 +1,74 @@
 const express = require('express');
-const models = require('../../models/contacts');
-const { nanoid } = require("nanoid");
-const router = express.Router()
-const Joi = require("joi");
-
-
+const models = require('../../models/contacts'); 
+const { nanoid } = require('nanoid');
+const router = express.Router();
+const Joi = require('joi');
 
 const schema = Joi.object({
   name: Joi.string().required(),
-
   phone: Joi.string().required(),
-
   email: Joi.string().email().required(),
 });
 
-
-
 router.get('/', async (req, res, next) => {
-  const data = await models.listContacts()
-  
-  res.status(200).json(data)
-})
-
-
+  try {
+    const data = await models.listContacts();
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 router.get('/:contactId', async (req, res, next) => {
-  const id = req.params.contactId;
-  const data = await models.getContactById(id)
-  res.status(200).json(data)
-})
+  try {
+    const id = req.params.contactId;
+    const data = await models.getContactById(id);
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 router.post('/', async (req, res, next) => {
-  const {error,value} = schema.validate(req.body);
-  if (error) {
-    return res.status(400)
-    .json({ message: 'Missing required name, email, or phone field' });
-  }
-  const newContacts ={
-    id : nanoid(),
-    name: value.name,
-    email: value.email,
-    phone: value.phone,
-  };
-  const data = await models.addContact(newContacts);
+  try {
+    const { error, value } = schema.validate(req.body);
+    if (error) {
+      return res
+        .status(400)
+        .json({ message: 'Missing required name, email, or phone field' });
+    }
 
-  res.status(201).json(data)
-})
+    const newContacts = {
+      id: nanoid(),
+      name: value.name,
+      email: value.email,
+      phone: value.phone,
+    };
+
+    const data = await models.addContact(newContacts);
+    res.status(201).json(data);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
 router.delete('/:id', async (req, res, next) => {
-  try{
- const {id} = req.params;
- const { success, result, message} = await models.removeContact(id)
- return res.status(200).json({result, message})
-  }catch(error){
-    
-
+  try {
+    const { id } = req.params;
+    const { success, result, message } = await models.removeContact(id);
+    return res.status(success ? 200 : 404).json({ result, message });
+  } catch (error) {
+    res.status(500).json({ message: 'Internal Server Error' });
   }
-  res.json({ message: 'template message' })
-})
+});
 
-router.put("/:contactId", async (req, res, next) => {
+router.put('/:contactId', async (req, res, next) => {
   try {
     const contactId = req.params.contactId;
     const body = req.body;
 
     if (Object.keys(body).length === 0) {
-      return res.status(400).json({ message: "Missing fields" });
+      return res.status(400).json({ message: 'Missing fields' });
     }
 
     const { success, result, message } = await models.updateContact(
@@ -73,16 +76,31 @@ router.put("/:contactId", async (req, res, next) => {
       body
     );
 
-    if (success) {
-      return res.status(200).json({ result, message });
-    } else {
-      return res.status(404).json({ message });
-    }
+    return res.status(success ? 200 : 404).json({ result, message });
   } catch (error) {
-
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
+router.patch('/:contactId/favorite', async (req, res, next) => {
+  try {
+    const contactId = req.params.contactId;
+    const { favorite } = req.body;
 
-module.exports = router
+    if (favorite === undefined) {
+      return res.status(400).json({ message: 'missing field favorite' });
+    }
+
+    const updatedContact = await models.updateContact(contactId, { favorite });
+
+    if (updatedContact.success) {
+      res.status(200).json(updatedContact.result);
+    } else {
+      res.status(404).json({ message: 'Not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
+
+module.exports = router;
