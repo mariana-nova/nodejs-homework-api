@@ -1,14 +1,7 @@
 const express = require('express');
-const models = require('../../models/contacts'); 
+const models = require('../../models/contacts');
 const { nanoid } = require('nanoid');
 const router = express.Router();
-const Joi = require('joi');
-
-const schema = Joi.object({
-  name: Joi.string().required(),
-  phone: Joi.string().required(),
-  email: Joi.string().email().required(),
-});
 
 router.get('/', async (req, res, next) => {
   try {
@@ -31,21 +24,12 @@ router.get('/:contactId', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const { error, value } = schema.validate(req.body);
-    if (error) {
-      return res
-        .status(400)
-        .json({ message: 'Missing required name, email, or phone field' });
-    }
-
-    const newContacts = {
+    const newContact = {
       id: nanoid(),
-      name: value.name,
-      email: value.email,
-      phone: value.phone,
+      ...req.body,
     };
 
-    const data = await models.addContact(newContacts);
+    const data = await models.addContact(newContact);
     res.status(201).json(data);
   } catch (error) {
     res.status(500).json({ message: 'Internal Server Error' });
@@ -58,6 +42,7 @@ router.delete('/:id', async (req, res, next) => {
     const { success, result, message } = await models.removeContact(id);
     return res.status(success ? 200 : 404).json({ result, message });
   } catch (error) {
+    console.error('Error in delete route:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });
@@ -88,7 +73,7 @@ router.patch('/:contactId/favorite', async (req, res, next) => {
     const { favorite } = req.body;
 
     if (favorite === undefined) {
-      return res.status(400).json({ message: 'missing field favorite' });
+      return res.status(400).json({ message: 'Missing field favorite' });
     }
 
     const updatedContact = await models.updateContact(contactId, { favorite });

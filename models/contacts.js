@@ -20,7 +20,7 @@ const getContactById = async (contactId) => {
 
 const removeContact = async (contactId) => {
   try {
-    const removedContact = await Contact.findByIdAndRemove(contactId);
+    const removedContact = await Contact.findOneAndDelete({ _id: contactId });
     return removedContact
       ? {
           success: true,
@@ -33,10 +33,11 @@ const removeContact = async (contactId) => {
           message: 'Contact not found.',
         };
   } catch (error) {
+    console.error('Error deleting contact:', error);
     return {
       success: false,
       result: null,
-      message: error,
+      message: 'error when deleting',
     };
   }
 };
